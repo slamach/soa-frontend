@@ -1,28 +1,57 @@
 import styled, { createGlobalStyle } from 'styled-components';
+import RobotoRegular from '../../assets/fonts/Roboto-Regular.woff2';
+import RobotoMedium from '../../assets/fonts/Roboto-Medium.woff2';
 
 const breakpoints = {
-  large: 1280,
-  medium: 768,
-  small: 360,
+  main: 1280,
 };
 
 export const theme = {
   breakpoints,
-  media: {
-    largeOnly: `screen and (min-width: ${breakpoints.large}px)`,
-    medium: `screen and (max-width: ${breakpoints.large - 1}px)`,
-    small: `screen and (max-width: ${breakpoints.medium - 1}px)`,
+  fonts: {
+    bodyMedium: `
+      font-size: 14px;
+      line-height: 20px;
+    `,
+    titleLarge: `
+      font-size: 22px;
+      line-height: 28px;
+    `,
+    headlineMedium: `
+      font-size: 28px;
+      line-height: 36px;
+    `,
   },
-  fonts: {},
-  colors: {},
+  colors: {
+    primary: '#D0BCFF',
+    background: '#1C1B1F',
+    onBackground: '#E6E1E5',
+  },
   misc: {},
 };
 
 export const GlobalStyle = createGlobalStyle`
-  *,
-  *::after,
-  *::before {
+  @font-face {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;
+    font-display: block;
+    src: url('${RobotoRegular}') format('woff2');
+  }
+
+  @font-face {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 500;
+    font-display: block;
+    src: url('${RobotoMedium}') format('woff2');
+  }
+
+
+  * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
   }
 
   html {
@@ -31,10 +60,14 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   body {
-    min-width: ${theme.breakpoints.small}px;
+    width: ${theme.breakpoints.main}px;
     min-height: 100%;
     margin: 0;
     overflow-x: hidden;
+    font-family: Roboto, Arial, sans-serif;
+    ${theme.fonts.bodyMedium};
+    color: ${theme.colors.onBackground};
+    background-color: ${theme.colors.background};
     scroll-behavior: smooth;
   }
 
@@ -47,6 +80,11 @@ export const GlobalStyle = createGlobalStyle`
   svg {
     max-width: 100%;
     height: auto;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
   }
 `;
 
