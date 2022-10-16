@@ -1,14 +1,17 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider } from 'styled-components';
-import { GlobalStyle, theme } from './App.styled';
+import { globalStyles, theme } from './App.styled';
 import RoutesPage from '../../pages/Routes/Routes';
 import NavigatorPage from '../../pages/Navigator/Navigator';
-import AppBase from '../../pages/AppBase/AppBase';
+import AppBase from '../AppBase/AppBase';
+import { ThemeProvider } from '@mui/material/styles';
+import GlobalStyles from '@mui/material/GlobalStyles';
+import { CssBaseline } from '@mui/material';
 
 const App = () => {
   return (
     <ThemeProvider theme={theme}>
-      <GlobalStyle />
+      <CssBaseline />
+      <GlobalStyles styles={globalStyles} />
       <AppBase>
         <Routes>
           <Route path="/routes" element={<RoutesPage />} />

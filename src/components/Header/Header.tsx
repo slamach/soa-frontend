@@ -1,21 +1,22 @@
+import Link from '@mui/material/Link';
 import { NavLink } from 'react-router-dom';
-import { Logo, StyledHeader } from './Header.styles';
 
 const Header = () => {
   return (
-    <StyledHeader>
-      <nav>
-        <Logo to="/">SOA Web UI</Logo>
-        <ul>
-          <li>
-            <NavLink to="/routes">Routes</NavLink>
-          </li>
-          <li>
-            <NavLink to="/navigator">Navigator</NavLink>
-          </li>
-        </ul>
-      </nav>
-    </StyledHeader>
+    <nav>
+      <ul>
+        <li>
+          <Link component={NavLink} to="/routes">
+            Routes
+          </Link>
+        </li>
+        <li>
+          <Link component={NavLink} to="/navigator">
+            Navigator
+          </Link>
+        </li>
+      </ul>
+    </nav>
   );
 };
 

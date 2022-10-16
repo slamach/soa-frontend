@@ -1,6 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
-import mainReducer from './modules/main';
+import { setupListeners } from '@reduxjs/toolkit/query/react';
+import routesApi from './api/routes';
 
-export default configureStore({
-  reducer: { main: mainReducer },
+const store = configureStore({
+  reducer: { [routesApi.reducerPath]: routesApi.reducer },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(routesApi.middleware),
 });
+
+setupListeners(store.dispatch);
+
+export default store;
