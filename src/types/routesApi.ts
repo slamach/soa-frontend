@@ -45,7 +45,7 @@ export interface components {
     };
     Route: {
       /** Format: int32 */
-      id?: number;
+      id: number;
       name: string;
       coordinates: components['schemas']['Coordinates'];
       /** Format: date-time */

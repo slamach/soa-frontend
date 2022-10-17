@@ -1,3 +1,4 @@
+import { Box } from '@mui/material';
 import Header from '../Header/Header';
 
 interface AppBaseProps {
@@ -8,7 +9,9 @@ const AppBase = (props: AppBaseProps) => {
   return (
     <>
       <Header />
-      <main>{props.children}</main>
+      <Box component="main" sx={{ flexGrow: 1 }}>
+        {props.children}
+      </Box>
     </>
   );
 };

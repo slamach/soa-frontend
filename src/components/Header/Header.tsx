@@ -1,22 +1,44 @@
-import Link from '@mui/material/Link';
-import { NavLink } from 'react-router-dom';
+import Container from '@mui/material/Container';
+import AppBar from '@mui/material/AppBar';
+import { Link as RouterLink } from 'react-router-dom';
+import Typography from '@mui/material/Typography';
+import { Stack, Toolbar } from '@mui/material';
+import NavButton from '../NavButton/NavButton';
 
 const Header = () => {
   return (
-    <nav>
-      <ul>
-        <li>
-          <Link component={NavLink} to="/routes">
-            Routes
-          </Link>
-        </li>
-        <li>
-          <Link component={NavLink} to="/navigator">
-            Navigator
-          </Link>
-        </li>
-      </ul>
-    </nav>
+    <AppBar position="static">
+      <Container maxWidth="lg">
+        <Toolbar disableGutters>
+          <Typography
+            variant="h5"
+            component={RouterLink}
+            to="/"
+            sx={{
+              mr: 4,
+              letterSpacing: '.3rem',
+              textDecoration: 'none',
+              color: 'inherit',
+            }}
+          >
+            SOA
+          </Typography>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={2}
+            sx={{ margin: 0, padding: 0, listStyle: 'none' }}
+          >
+            <li>
+              <NavButton to="/routes">Routes</NavButton>
+            </li>
+            <li>
+              <NavButton to="/navigator">Navigator</NavButton>
+            </li>
+          </Stack>
+        </Toolbar>
+      </Container>
+    </AppBar>
   );
 };
 

@@ -54,10 +54,12 @@ export const globalStyles = css`
   }
 
   body {
-    width: 1280px;
-    margin-left: auto;
-    margin-right: auto;
     overflow-x: hidden;
+  }
+
+  #root {
+    display: flex;
+    flex-direction: column;
   }
 
   img,
