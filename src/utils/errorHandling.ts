@@ -11,8 +11,6 @@ export function isResponseError(
     'data' in error &&
     typeof (error as any).data === 'object' &&
     'message' in (error as any).data &&
-    typeof ((error as any).data as any).message === 'string' &&
-    'payload' in (error as any).data &&
-    typeof ((error as any).data as any).payload === 'object'
+    typeof ((error as any).data as any).message === 'string'
   );
 }

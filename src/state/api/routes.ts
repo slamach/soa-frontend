@@ -22,6 +22,17 @@ const routesApi = createApi({
       }),
       providesTags: ['Routes'],
     }),
+    addRoute: builder.mutation<
+      components['schemas']['Route'],
+      Omit<Omit<components['schemas']['Route'], 'id'>, 'creationDate'>
+    >({
+      query: (body) => ({
+        url: '/',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Routes'],
+    }),
     updateRoute: builder.mutation<
       components['schemas']['Route'],
       Partial<components['schemas']['Route']> &
@@ -46,6 +57,7 @@ const routesApi = createApi({
 
 export const {
   useGetRoutesQuery,
+  useAddRouteMutation,
   useUpdateRouteMutation,
   useDeleteRouteMutation,
 } = routesApi;

@@ -38,10 +38,10 @@ export interface components {
       /** Format: float */
       x?: number;
       /** Format: double */
-      y: number;
+      y?: number;
       /** Format: double */
-      z: number;
-      name: string;
+      z?: number;
+      name?: string;
     };
     Route: {
       /** Format: int32 */

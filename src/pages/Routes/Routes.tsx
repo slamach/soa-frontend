@@ -13,14 +13,25 @@ import {
   GridActionsCellItem,
   GridRenderEditCellParams,
   GridEditInputCell,
+  GridFooterContainer,
+  GridFooter,
 } from '@mui/x-data-grid';
 import { useMemo, useState } from 'react';
-import { Alert, AlertColor, Snackbar, Tooltip } from '@mui/material';
+import {
+  Alert,
+  AlertColor,
+  Box,
+  Button,
+  Snackbar,
+  Tooltip,
+} from '@mui/material';
 import { isResponseError } from '../../utils/errorHandling';
 import ContainerLoader from '../../components/ContainerLoader/ContainerLoader';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
+import { validateDistance, validateName } from '../../utils/validation';
+import AddRouteModal from '../../components/AddRouteDialog/AddRouteModal';
 
-function EditInputCell(props: GridRenderEditCellParams) {
+const ValidationEditInputCell = (props: GridRenderEditCellParams) => {
   const { error } = props;
   return (
     <Tooltip
@@ -35,7 +46,26 @@ function EditInputCell(props: GridRenderEditCellParams) {
       <GridEditInputCell {...props} />
     </Tooltip>
   );
+};
+
+interface CustomGridFooterProps {
+  handleClick: () => void;
 }
+
+const CustomGridFooter = (props: CustomGridFooterProps) => {
+  return (
+    <GridFooterContainer>
+      <Box sx={{ pl: 1 }}>
+        <Button onClick={props.handleClick}>Add new route</Button>
+      </Box>
+      <GridFooter
+        sx={{
+          border: 'none',
+        }}
+      />
+    </GridFooterContainer>
+  );
+};
 
 const Routes = () => {
   const [page, setPage] = useState<number>(0);
@@ -53,6 +83,7 @@ const Routes = () => {
     severity: undefined,
     message: null,
   });
+  const [addModalOpen, setAddModalOpen] = useState<boolean>(false);
 
   const { data, error, isLoading } = useGetRoutesQuery({
     page,
@@ -76,18 +107,6 @@ const Routes = () => {
   const [updateRoute] = useUpdateRouteMutation();
   const [deleteRoute] = useDeleteRouteMutation();
 
-  const validateName = (name: string) => {
-    if (name.length === 0) {
-      return 'Name must be not empty!';
-    }
-  };
-
-  const validateDistance = (distance: number) => {
-    if (distance <= 1) {
-      return 'Distance must be greater than 1!';
-    }
-  };
-
   const handleSnackClose = (
     event?: React.SyntheticEvent | Event,
     reason?: string
@@ -110,7 +129,7 @@ const Routes = () => {
       preProcessEditCellProps: (params) => {
         return { ...params.props, error: validateName(params.props.value) };
       },
-      renderEditCell: (params) => <EditInputCell {...params} />,
+      renderEditCell: (params) => <ValidationEditInputCell {...params} />,
     },
     {
       field: 'x',
@@ -134,7 +153,7 @@ const Routes = () => {
       flex: 80,
       type: 'dateTime',
       valueFormatter: (params) =>
-        params.value.toLocaleString('ru-RU', {
+        params.value.toLocaleString('en-US', {
           day: 'numeric',
           month: 'long',
           hour: '2-digit',
@@ -174,7 +193,7 @@ const Routes = () => {
       preProcessEditCellProps: (params) => {
         return { ...params.props, error: validateDistance(params.props.value) };
       },
-      renderEditCell: (params) => <EditInputCell {...params} />,
+      renderEditCell: (params) => <ValidationEditInputCell {...params} />,
     },
     {
       field: 'actions',
@@ -320,6 +339,9 @@ const Routes = () => {
             onFilterModelChange={(model) => {
               setFilterModel(model);
             }}
+            components={{
+              Footer: CustomGridFooter,
+            }}
             componentsProps={{
               filterPanel: {
                 sx: {
@@ -327,6 +349,9 @@ const Routes = () => {
                     display: 'none',
                   },
                 },
+              },
+              footer: {
+                handleClick: () => setAddModalOpen(true),
               },
             }}
             experimentalFeatures={{
@@ -350,6 +375,33 @@ const Routes = () => {
           {snackState.message}
         </Alert>
       </Snackbar>
+      <AddRouteModal
+        open={addModalOpen}
+        handleClose={() => setAddModalOpen(false)}
+        handleAddResult={(result: any) => {
+          if ('error' in result) {
+            let errorMessage: string;
+            if (isResponseError(result.error) && result.error.data.message) {
+              errorMessage = result.error.data.message;
+            } else {
+              errorMessage = 'Unknown error';
+            }
+            setSnackState((prevState) => ({
+              ...prevState,
+              open: true,
+              severity: 'error',
+              message: errorMessage,
+            }));
+          } else {
+            setSnackState((prevState) => ({
+              ...prevState,
+              open: true,
+              severity: 'success',
+              message: 'Successfully added',
+            }));
+          }
+        }}
+      />
     </>
   );
 };
