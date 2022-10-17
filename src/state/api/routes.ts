@@ -52,6 +52,24 @@ const routesApi = createApi({
       }),
       invalidatesTags: ['Routes'],
     }),
+    getRouteWithMinimumName: builder.query<any, void>({
+      query: () => ({
+        url: '/minimum-name',
+        method: 'POST',
+      }),
+    }),
+    getToGroups: builder.query<any, void>({
+      query: () => ({
+        url: '/groups',
+        method: 'POST',
+      }),
+    }),
+    getSumOfDistances: builder.query<any, void>({
+      query: () => ({
+        url: '/all-distances',
+        method: 'POST',
+      }),
+    }),
   }),
 });
 
@@ -60,6 +78,9 @@ export const {
   useAddRouteMutation,
   useUpdateRouteMutation,
   useDeleteRouteMutation,
+  useLazyGetRouteWithMinimumNameQuery,
+  useLazyGetToGroupsQuery,
+  useLazyGetSumOfDistancesQuery,
 } = routesApi;
 
 export default routesApi;

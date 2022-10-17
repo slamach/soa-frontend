@@ -2,6 +2,9 @@ import WithQuery from '../../components/WithQuery/WithQuery';
 import {
   useDeleteRouteMutation,
   useGetRoutesQuery,
+  useLazyGetRouteWithMinimumNameQuery,
+  useLazyGetSumOfDistancesQuery,
+  useLazyGetToGroupsQuery,
   useUpdateRouteMutation,
 } from '../../state/api/routes';
 import {
@@ -22,8 +25,10 @@ import {
   AlertColor,
   Box,
   Button,
+  ButtonGroup,
   Snackbar,
   Tooltip,
+  Typography,
 } from '@mui/material';
 import { isResponseError } from '../../utils/errorHandling';
 import ContainerLoader from '../../components/ContainerLoader/ContainerLoader';
@@ -107,6 +112,10 @@ const Routes = () => {
   const [updateRoute] = useUpdateRouteMutation();
   const [deleteRoute] = useDeleteRouteMutation();
 
+  const [getRouteWithMinimumName] = useLazyGetRouteWithMinimumNameQuery();
+  const [getToGroups] = useLazyGetToGroupsQuery();
+  const [getSumOfDistances] = useLazyGetSumOfDistancesQuery();
+
   const handleSnackClose = (
     event?: React.SyntheticEvent | Event,
     reason?: string
@@ -118,6 +127,50 @@ const Routes = () => {
       ...prevState,
       open: false,
     }));
+  };
+
+  const handleError = (result: any, successMessage: string) => {
+    if ('error' in result) {
+      let errorMessage: string;
+      if (isResponseError(result.error) && result.error.data.message) {
+        errorMessage = result.error.data.message;
+      } else {
+        errorMessage = 'Unknown error';
+      }
+      setSnackState((prevState) => ({
+        ...prevState,
+        open: true,
+        severity: 'error',
+        message: errorMessage,
+      }));
+    } else {
+      setSnackState((prevState) => ({
+        ...prevState,
+        open: true,
+        severity: 'success',
+        message: successMessage,
+      }));
+    }
+  };
+
+  const handleMinimumName = async () => {
+    const result = await getRouteWithMinimumName();
+    handleError(result, `Minimum name: ${result.data?.payload?.name}`);
+  };
+
+  const handleGroups = async () => {
+    const result = await getToGroups();
+    handleError(
+      result,
+      `Groups: ${Object.entries(result.data)
+        .map((entry) => `${entry[0]}: ${entry[1]}`)
+        .join(', ')}`
+    );
+  };
+
+  const handleAllDistances = async () => {
+    const result = await getSumOfDistances();
+    handleError(result, `Sum of all distances: ${result.data?.payload}`);
   };
 
   const columns: GridColumns = [
@@ -207,30 +260,7 @@ const Routes = () => {
             label="Delete"
             onClick={async () => {
               const deleteResult = await deleteRoute(Number(id));
-              if ('error' in deleteResult) {
-                let errorMessage: string;
-                if (
-                  isResponseError(deleteResult.error) &&
-                  deleteResult.error.data.message
-                ) {
-                  errorMessage = deleteResult.error.data.message;
-                } else {
-                  errorMessage = 'Unknown error';
-                }
-                setSnackState((prevState) => ({
-                  ...prevState,
-                  open: true,
-                  severity: 'error',
-                  message: errorMessage,
-                }));
-              } else {
-                setSnackState((prevState) => ({
-                  ...prevState,
-                  open: true,
-                  severity: 'success',
-                  message: 'Successfully deleted',
-                }));
-              }
+              handleError(deleteResult, 'Sucessfully deleted');
             }}
             color="inherit"
           />,
@@ -264,7 +294,29 @@ const Routes = () => {
         onLoadingComponent={<ContainerLoader />}
         onErrorComponent={<p>ERROR</p>}
       >
-        <div style={{ height: '100%', width: '100%' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%',
+            height: '100%',
+          }}
+        >
+          <Box
+            sx={{
+              padding: 1,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <Typography variant="body1">Additional endpoints:</Typography>
+            <ButtonGroup>
+              <Button onClick={handleMinimumName}>Minimum name</Button>
+              <Button onClick={handleGroups}>Groups</Button>
+              <Button onClick={handleAllDistances}>All distances</Button>
+            </ButtonGroup>
+          </Box>
           <DataGrid
             columns={columns}
             rows={rows}
@@ -291,32 +343,7 @@ const Routes = () => {
                 id: Number(newRow.id),
                 ...updatedFields,
               });
-              if ('error' in updateResult) {
-                let errorMessage: string;
-                if (
-                  isResponseError(updateResult.error) &&
-                  updateResult.error.data.message
-                ) {
-                  errorMessage = updateResult.error.data.message;
-                } else {
-                  errorMessage = 'Unknown error';
-                }
-                setSnackState((prevState) => ({
-                  ...prevState,
-                  open: true,
-                  severity: 'error',
-                  message: errorMessage,
-                }));
-                return oldRow;
-              } else {
-                setSnackState((prevState) => ({
-                  ...prevState,
-                  open: true,
-                  severity: 'success',
-                  message: 'Successfully edited',
-                }));
-                return newRow;
-              }
+              handleError(updateResult, 'Sucessfully updated');
             }}
             sortModel={sortModel}
             onSortModelChange={(model) => {
@@ -358,7 +385,7 @@ const Routes = () => {
               newEditingApi: true,
             }}
           />
-        </div>
+        </Box>
       </WithQuery>
       <Snackbar
         open={snackState.open}
@@ -378,29 +405,7 @@ const Routes = () => {
       <AddRouteModal
         open={addModalOpen}
         handleClose={() => setAddModalOpen(false)}
-        handleAddResult={(result: any) => {
-          if ('error' in result) {
-            let errorMessage: string;
-            if (isResponseError(result.error) && result.error.data.message) {
-              errorMessage = result.error.data.message;
-            } else {
-              errorMessage = 'Unknown error';
-            }
-            setSnackState((prevState) => ({
-              ...prevState,
-              open: true,
-              severity: 'error',
-              message: errorMessage,
-            }));
-          } else {
-            setSnackState((prevState) => ({
-              ...prevState,
-              open: true,
-              severity: 'success',
-              message: 'Successfully added',
-            }));
-          }
-        }}
+        handleAddResult={(result) => handleError(result, 'Sucessfullt added')}
       />
     </>
   );
