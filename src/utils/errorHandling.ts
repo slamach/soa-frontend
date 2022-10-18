@@ -1,8 +1,9 @@
-import { components } from '../types/api/routes';
+import { AlertColor } from '@mui/material';
+import { BasicErrorResponse } from '../types/api';
 
 export function isResponseError(
   error: unknown
-): error is { status: number; data: components['schemas']['Response'] } {
+): error is { status: number; data: BasicErrorResponse } {
   return (
     typeof error === 'object' &&
     error != null &&
@@ -14,3 +15,23 @@ export function isResponseError(
     typeof ((error as any).data as any).message === 'string'
   );
 }
+
+export const processResult = (
+  result: any,
+  successMessage: string,
+  openSnack: (severity: AlertColor | undefined, message: string) => void
+) => {
+  if ('error' in result) {
+    let errorMessage: string;
+    if (isResponseError(result.error) && result.error.data.message) {
+      errorMessage = result.error.data.message;
+    } else {
+      errorMessage = 'Unknown error';
+    }
+    openSnack('error', errorMessage);
+    return false;
+  } else {
+    openSnack('success', successMessage);
+    return true;
+  }
+};

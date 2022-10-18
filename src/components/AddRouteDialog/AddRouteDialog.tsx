@@ -16,12 +16,12 @@ import {
   validateName,
 } from '../../utils/validation';
 
-interface AddRouteModalProps extends DialogProps {
+interface AddRouteDialogProps extends DialogProps {
   handleClose: () => void;
   handleAddResult: (result: any) => void;
 }
 
-interface AddRouteModalFormValues {
+interface AddRouteDialogFormValues {
   name: string;
   x: number;
   y: number;
@@ -38,8 +38,8 @@ interface AddRouteModalFormValues {
   distance: number;
 }
 
-const AddRouteModal = (props: AddRouteModalProps) => {
-  const initialValues: AddRouteModalFormValues = {
+const AddRouteDialog = (props: AddRouteDialogProps) => {
+  const initialValues: AddRouteDialogFormValues = {
     name: '',
     x: 0,
     y: 0,
@@ -135,7 +135,7 @@ const AddRouteModal = (props: AddRouteModalProps) => {
           <Form>
             <Box
               sx={{
-                padding: 3,
+                p: 3,
               }}
             >
               <Typography variant="h5" component="h2" marginBottom={2}>
@@ -260,4 +260,4 @@ const AddRouteModal = (props: AddRouteModalProps) => {
   );
 };
 
-export default AddRouteModal;
+export default AddRouteDialog;

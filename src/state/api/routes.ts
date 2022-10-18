@@ -1,5 +1,15 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { components, operations } from '../../types/api/routes';
+import {
+  BasicResponse,
+  Location,
+  LocationGroups,
+  Page,
+  Pageable,
+  Route,
+  RouteAddDTO,
+  RouteFilterDTO,
+  RouteUpdateDTO,
+} from '../../types/api';
 import { baseRoutesQuery } from './baseQuery';
 
 const routesApi = createApi({
@@ -7,14 +17,7 @@ const routesApi = createApi({
   baseQuery: baseRoutesQuery,
   tagTypes: ['Routes'],
   endpoints: (builder) => ({
-    getRoutes: builder.query<
-      {
-        totalElements: number;
-        content: operations['getAll']['responses']['200']['content']['application/json'];
-      },
-      operations['getAll']['parameters']['query']['Routes filters'] &
-        operations['getAll']['parameters']['query']['Paging and sorting']
-    >({
+    getRoutes: builder.query<Page<Route>, RouteFilterDTO & Pageable>({
       query: (params) => ({
         url: '/',
         method: 'GET',
@@ -22,17 +25,7 @@ const routesApi = createApi({
       }),
       providesTags: ['Routes'],
     }),
-    addRoute: builder.mutation<
-      | operations['create']['responses']['200']['content']['application/json']
-      | operations['create']['responses']['400']['content']['application/json'],
-      Omit<
-        components['schemas']['Route'],
-        'id' | 'creationDate' | 'from' | 'to'
-      > & {
-        from: Partial<components['schemas']['Location']>;
-        to: Partial<components['schemas']['Location']>;
-      }
-    >({
+    addRoute: builder.mutation<Route, RouteAddDTO>({
       query: (body) => ({
         url: '/',
         method: 'POST',
@@ -40,12 +33,7 @@ const routesApi = createApi({
       }),
       invalidatesTags: ['Routes'],
     }),
-    updateRoute: builder.mutation<
-      | operations['update']['responses']['200']['content']['application/json']
-      | operations['update']['responses']['400']['content']['application/json'],
-      Partial<Omit<components['schemas']['Route'], 'from' | 'to'>> &
-        Pick<components['schemas']['Route'], 'id'>
-    >({
+    updateRoute: builder.mutation<Route, RouteUpdateDTO>({
       query: (body) => ({
         url: '/',
         method: 'PUT',
@@ -53,11 +41,7 @@ const routesApi = createApi({
       }),
       invalidatesTags: ['Routes'],
     }),
-    deleteRoute: builder.mutation<
-      | operations['delete']['responses']['200']
-      | operations['delete']['responses']['404']['content']['application/json'],
-      number
-    >({
+    deleteRoute: builder.mutation<void, number>({
       query: (id) => ({
         url: `/${id}`,
         method: 'DELETE',
@@ -65,10 +49,7 @@ const routesApi = createApi({
       invalidatesTags: ['Routes'],
     }),
     getObjectWithMinimumName: builder.query<
-      | {
-          payload: operations['getObjectWithMinimumName']['responses']['200']['content']['application/json'];
-        }
-      | operations['getObjectWithMinimumName']['responses']['404']['content']['application/json'],
+      BasicResponse<Route | Location>,
       void
     >({
       query: () => ({
@@ -76,21 +57,13 @@ const routesApi = createApi({
         method: 'POST',
       }),
     }),
-    getToGroups: builder.query<
-      {
-        [group: string]: number;
-      },
-      void
-    >({
+    getToGroups: builder.query<LocationGroups, void>({
       query: () => ({
         url: '/groups',
         method: 'POST',
       }),
     }),
-    getSumOfDistances: builder.query<
-      operations['computeDistances']['responses']['200']['content']['application/json'],
-      void
-    >({
+    getSumOfDistances: builder.query<BasicResponse<number>, void>({
       query: () => ({
         url: '/all-distances',
         method: 'POST',

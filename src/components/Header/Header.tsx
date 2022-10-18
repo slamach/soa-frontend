@@ -27,7 +27,7 @@ const Header = () => {
             direction="row"
             alignItems="center"
             spacing={2}
-            sx={{ margin: 0, padding: 0, listStyle: 'none' }}
+            sx={{ m: 0, p: 0, listStyle: 'none' }}
           >
             <li>
               <NavButton to="/routes">Routes</NavButton>

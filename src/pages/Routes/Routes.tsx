@@ -7,92 +7,41 @@ import {
   useLazyGetToGroupsQuery,
   useUpdateRouteMutation,
 } from '../../state/api/routes';
+import { GridSortModel, GridFilterModel } from '@mui/x-data-grid';
+import { useCallback, useMemo, useState } from 'react';
 import {
-  DataGrid,
-  GridRowsProp,
-  GridColumns,
-  GridSortModel,
-  GridFilterModel,
-  GridActionsCellItem,
-  GridRenderEditCellParams,
-  GridEditInputCell,
-  GridFooterContainer,
-  GridFooter,
-} from '@mui/x-data-grid';
-import { useMemo, useState } from 'react';
-import {
-  Alert,
-  AlertColor,
   Box,
   Button,
   ButtonGroup,
   Container,
   Divider,
-  Snackbar,
   Stack,
-  Tooltip,
   Typography,
 } from '@mui/material';
-import { isResponseError } from '../../utils/errorHandling';
+import { processResult } from '../../utils/errorHandling';
 import ContainerLoader from '../../components/ContainerLoader/ContainerLoader';
-import DeleteIcon from '@mui/icons-material/DeleteOutlined';
-import { validateDistance, validateName } from '../../utils/validation';
-import AddRouteModal from '../../components/AddRouteDialog/AddRouteModal';
-
-const ValidationEditInputCell = (props: GridRenderEditCellParams) => {
-  const { error } = props;
-  return (
-    <Tooltip
-      open={Boolean(error)}
-      title={error}
-      componentsProps={{
-        tooltip: {
-          sx: { color: 'error.contrastText', backgroundColor: 'error.main' },
-        },
-      }}
-    >
-      <GridEditInputCell {...props} />
-    </Tooltip>
-  );
-};
-
-interface CustomGridFooterProps {
-  handleClick: () => void;
-}
-
-const CustomGridFooter = (props: CustomGridFooterProps) => {
-  return (
-    <GridFooterContainer>
-      <Box sx={{ pl: 1 }}>
-        <Button onClick={props.handleClick}>Add new route</Button>
-      </Box>
-      <GridFooter
-        sx={{
-          border: 'none',
-        }}
-      />
-    </GridFooterContainer>
-  );
-};
+import AddRouteDialog from '../../components/AddRouteDialog/AddRouteDialog';
+import ContainerError from '../../components/ContainerError/ContainerError';
+import RouteGrid, {
+  RouteGridRowType,
+} from '../../components/RouteGrid/RouteGrid';
+import { RouteUpdateDTO } from '../../types/api';
+import { useSnack } from '../../hooks/useSnack';
 
 const Routes = () => {
+  // Page state
+  const [addDialogOpen, setAddDialogOpen] = useState<boolean>(false);
+  const { openSnack } = useSnack();
+
+  // Grid state
   const [page, setPage] = useState<number>(0);
   const [size, setSize] = useState<number>(25);
   const [sortModel, setSortModel] = useState<GridSortModel>([]);
   const [filterModel, setFilterModel] = useState<GridFilterModel>({
     items: [],
   });
-  const [snackState, setSnackState] = useState<{
-    open: boolean;
-    severity: AlertColor | undefined;
-    message: string | null;
-  }>({
-    open: false,
-    severity: undefined,
-    message: null,
-  });
-  const [addModalOpen, setAddModalOpen] = useState<boolean>(false);
 
+  // Core endpoints
   const { data, error, isLoading } = useGetRoutesQuery({
     page,
     size,
@@ -105,9 +54,6 @@ const Routes = () => {
     coordinatesYFilter: filterModel.items.find(
       (item) => item.columnField === 'y'
     )?.value,
-    creationDateFilter: filterModel.items.find(
-      (item) => item.columnField === 'creationDate'
-    )?.value,
     distanceFilter: filterModel.items.find(
       (item) => item.columnField === 'distance'
     )?.value,
@@ -115,166 +61,60 @@ const Routes = () => {
   const [updateRoute] = useUpdateRouteMutation();
   const [deleteRoute] = useDeleteRouteMutation();
 
+  const handleUpdateRoute = useCallback(
+    async (id: number, updatedFields: Omit<RouteUpdateDTO, 'id'>) => {
+      const updateResult = await updateRoute({
+        id: Number(id),
+        ...updatedFields,
+      });
+      return processResult(updateResult, 'Sucessfully updated', openSnack);
+    },
+    [updateRoute, openSnack]
+  );
+
+  const handleDeleteRoute = useCallback(
+    async (id: number) => {
+      const deleteResult = await deleteRoute(id);
+      return processResult(deleteResult, 'Sucessfully deleted', openSnack);
+    },
+    [deleteRoute, openSnack]
+  );
+
+  // Additional endpoints
   const [getObjectWithMinimumName] = useLazyGetObjectWithMinimumNameQuery();
   const [getToGroups] = useLazyGetToGroupsQuery();
   const [getSumOfDistances] = useLazyGetSumOfDistancesQuery();
 
-  const handleSnackClose = (
-    event?: React.SyntheticEvent | Event,
-    reason?: string
-  ) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setSnackState((prevState) => ({
-      ...prevState,
-      open: false,
-    }));
-  };
-
-  const processResult = (result: any, successMessage: string) => {
-    if ('error' in result) {
-      let errorMessage: string;
-      if (isResponseError(result.error) && result.error.data.message) {
-        errorMessage = result.error.data.message;
-      } else {
-        errorMessage = 'Unknown error';
-      }
-      setSnackState((prevState) => ({
-        ...prevState,
-        open: true,
-        severity: 'error',
-        message: errorMessage,
-      }));
-      return false;
-    } else {
-      setSnackState((prevState) => ({
-        ...prevState,
-        open: true,
-        severity: 'success',
-        message: successMessage,
-      }));
-      return true;
-    }
-  };
-
-  const handleMinimumName = async () => {
+  const handleMinimumName = useCallback(async () => {
     const result = await getObjectWithMinimumName();
-    processResult(result, `Minimum name: ${result.data?.payload?.name}`);
-  };
+    return processResult(
+      result,
+      `Minimum name: ${result.data?.payload?.name}`,
+      openSnack
+    );
+  }, [getObjectWithMinimumName, openSnack]);
 
-  const handleGroups = async () => {
+  const handleGroups = useCallback(async () => {
     const result = await getToGroups();
-    processResult(
+    return processResult(
       result,
       `Groups: ${Object.entries(result.data ?? {})
         .map((entry) => `${entry[0]}: ${entry[1]}`)
-        .join(', ')}`
+        .join(', ')}`,
+      openSnack
     );
-  };
+  }, [getToGroups, openSnack]);
 
-  const handleAllDistances = async () => {
+  const handleAllDistances = useCallback(async () => {
     const result = await getSumOfDistances();
-    processResult(result, `Sum of all distances: ${result.data?.payload}`);
-  };
+    return processResult(
+      result,
+      `Sum of all distances: ${result.data?.payload}`,
+      openSnack
+    );
+  }, [getSumOfDistances, openSnack]);
 
-  const columns: GridColumns = [
-    {
-      field: 'name',
-      headerName: 'Name',
-      flex: 50,
-      editable: true,
-      preProcessEditCellProps: (params) => {
-        return { ...params.props, error: validateName(params.props.value) };
-      },
-      renderEditCell: (params) => <ValidationEditInputCell {...params} />,
-    },
-    {
-      field: 'x',
-      headerName: 'X',
-      type: 'number',
-      flex: 25,
-      editable: true,
-      sortable: false,
-    },
-    {
-      field: 'y',
-      headerName: 'Y',
-      type: 'number',
-      flex: 25,
-      editable: true,
-      sortable: false,
-    },
-    {
-      field: 'creationDate',
-      headerName: 'Creation Date',
-      flex: 80,
-      type: 'dateTime',
-      valueFormatter: (params) =>
-        params.value.toLocaleString('en-US', {
-          day: 'numeric',
-          month: 'long',
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-      valueGetter: (params) => new Date(params.value),
-      valueSetter: (params) => ({
-        ...params.row,
-        creationDate: params.value.toISOString(),
-      }),
-      editable: true,
-    },
-    {
-      field: 'from',
-      headerName: 'From',
-      flex: 25,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-      valueFormatter: (params) => `${params.value.id}: ${params.value.name}`,
-    },
-    {
-      field: 'to',
-      headerName: 'To',
-      flex: 25,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-      valueFormatter: (params) => `${params.value.id}: ${params.value.name}`,
-    },
-    {
-      field: 'distance',
-      headerName: 'Distance',
-      type: 'number',
-      flex: 50,
-      editable: true,
-      preProcessEditCellProps: (params) => {
-        return { ...params.props, error: validateDistance(params.props.value) };
-      },
-      renderEditCell: (params) => <ValidationEditInputCell {...params} />,
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      type: 'actions',
-      width: 75,
-      getActions: ({ id }) => {
-        return [
-          <GridActionsCellItem
-            icon={<DeleteIcon />}
-            label="Delete"
-            onClick={async () => {
-              const deleteResult = await deleteRoute(Number(id));
-              processResult(deleteResult, 'Sucessfully deleted');
-            }}
-            color="inherit"
-          />,
-        ];
-      },
-    },
-  ];
-
-  const rows: GridRowsProp = useMemo(
+  const rows: RouteGridRowType[] = useMemo(
     () =>
       data
         ? data.content.map((route) => ({
@@ -298,19 +138,7 @@ const Routes = () => {
         error={error}
         onLoadingComponent={<ContainerLoader />}
         onErrorComponent={
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: '100%',
-              height: '100%',
-            }}
-          >
-            <Typography variant="h5" component="p">
-              Error while fetching initial data
-            </Typography>
-          </Box>
+          <ContainerError errorMessage="Error while fetching initial data" />
         }
       >
         <Box
@@ -321,13 +149,7 @@ const Routes = () => {
             height: '100%',
           }}
         >
-          <Container
-            maxWidth="xl"
-            sx={{
-              pt: 1,
-              pb: 1,
-            }}
-          >
+          <Container maxWidth="xl" sx={{ pt: 1, pb: 1 }}>
             <Stack
               direction="row"
               justifyContent="space-between"
@@ -344,102 +166,30 @@ const Routes = () => {
             </Stack>
             <Divider sx={{ mt: 1 }} />
           </Container>
-          <DataGrid
-            sx={{
-              pl: 2,
-              pr: 2,
-              border: 'none',
-            }}
-            columns={columns}
+          <RouteGrid
             rows={rows}
-            filterMode="server"
-            paginationMode="server"
-            sortingMode="server"
-            loading={isLoading}
-            processRowUpdate={async (newRow, oldRow) => {
-              const updatedFields: { [key: string]: any } = {};
-              for (let field of Object.keys(newRow)) {
-                if (
-                  JSON.stringify(newRow[field]) !==
-                  JSON.stringify(oldRow[field])
-                ) {
-                  updatedFields[field] = newRow[field];
-                }
-              }
-              if (Object.keys(updatedFields).length === 0) {
-                return oldRow;
-              }
-              const updateResult = await updateRoute({
-                id: Number(newRow.id),
-                ...updatedFields,
-              });
-              if (processResult(updateResult, 'Sucessfully updated')) {
-                return newRow;
-              } else {
-                return oldRow;
-              }
-            }}
+            isLoading={isLoading}
             sortModel={sortModel}
-            onSortModelChange={(model) => {
-              setSortModel(model);
-            }}
-            page={page}
-            onPageChange={(page) => {
-              setPage(page);
-            }}
-            pageSize={size}
-            onPageSizeChange={(size) => {
-              setSize(size);
-            }}
-            rowsPerPageOptions={[5, 10, 25]}
-            rowCount={data?.totalElements}
-            disableSelectionOnClick
-            disableColumnSelector
-            disableDensitySelector
             filterModel={filterModel}
-            onFilterModelChange={(model) => {
-              setFilterModel(model);
-            }}
-            components={{
-              Footer: CustomGridFooter,
-            }}
-            componentsProps={{
-              filterPanel: {
-                sx: {
-                  '& .MuiDataGrid-filterFormOperatorInput': {
-                    display: 'none',
-                  },
-                },
-              },
-              footer: {
-                handleClick: () => setAddModalOpen(true),
-              },
-            }}
-            experimentalFeatures={{
-              newEditingApi: true,
-            }}
+            page={page}
+            size={size}
+            totalElements={data?.totalElements}
+            setFilterModel={setFilterModel}
+            setSortModel={setSortModel}
+            setPage={setPage}
+            setSize={setSize}
+            setAddDialogOpen={setAddDialogOpen}
+            handleUpdateRoute={handleUpdateRoute}
+            handleDeleteRoute={handleDeleteRoute}
           />
         </Box>
       </WithQuery>
-      <Snackbar
-        open={snackState.open}
-        onClose={handleSnackClose}
-        autoHideDuration={5000}
-      >
-        <Alert
-          severity={snackState.severity}
-          onClose={handleSnackClose}
-          elevation={6}
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
-          {snackState.message}
-        </Alert>
-      </Snackbar>
-      <AddRouteModal
-        open={addModalOpen}
-        handleClose={() => setAddModalOpen(false)}
-        handleAddResult={(result) => processResult(result, 'Sucessfullt added')}
+      <AddRouteDialog
+        open={addDialogOpen}
+        handleClose={() => setAddDialogOpen(false)}
+        handleAddResult={(result) =>
+          processResult(result, 'Sucessfullt added', openSnack)
+        }
       />
     </>
   );

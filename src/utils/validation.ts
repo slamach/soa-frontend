@@ -1,4 +1,4 @@
-import { components } from '../types/api/routes';
+import { Location } from '../types/api';
 
 export const validateName = (name: string) => {
   if (name.length === 0) {
@@ -12,9 +12,7 @@ export const validateDistance = (distance: number) => {
   }
 };
 
-export const validateAddedLocation = (
-  location: Partial<components['schemas']['Location']>
-) => {
+export const validateAddedLocation = (location: Partial<Location>) => {
   if (
     location.id !== undefined &&
     (location.name !== undefined ||
