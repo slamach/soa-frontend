@@ -1,6 +1,7 @@
 import {
   DataGrid,
   GridActionsCellItem,
+  GridCellParams,
   GridColumns,
   GridFilterModel,
   GridSortModel,
@@ -152,23 +153,10 @@ const RouteGrid = (props: RouteGridProps) => {
   );
 
   const handleRowUpdate = useCallback(
-    async (newRow: RouteGridRowType, oldRow: RouteGridRowType) => {
-      const updatedFields: Omit<RouteUpdateDTO, 'id'> = {};
-      for (let field of Object.keys(newRow) as Array<keyof RouteGridRowType>) {
-        if (newRow[field] !== oldRow[field]) {
-          // @ts-expect-error
-          updatedFields[field] = newRow[field];
-        }
-      }
-      if (Object.keys(updatedFields).length === 0) {
-        return oldRow;
-      }
-
-      if (await handleUpdateRoute(oldRow.id, updatedFields)) {
-        return newRow;
-      } else {
-        return oldRow;
-      }
+    async (params: GridCellParams) => {
+      await handleUpdateRoute(Number(params.id), {
+        [params.field]: params.value,
+      });
     },
     [handleUpdateRoute]
   );
@@ -190,7 +178,7 @@ const RouteGrid = (props: RouteGridProps) => {
       filterMode="server"
       paginationMode="server"
       sortingMode="server"
-      processRowUpdate={handleRowUpdate}
+      onCellEditStop={handleRowUpdate}
       onFilterModelChange={(model) => {
         props.setFilterModel(model);
       }}
