@@ -36,27 +36,24 @@ const OrderedRoutes = (props: OrderedRoutesProps) => {
           </TableHead>
           {props.routes.length > 0 && (
             <TableBody>
-              {Array.from(Array(10).keys()).map(() => {
-                let route = props.routes[0];
-                return (
-                  <TableRow>
-                    <TableCell>{route.name}</TableCell>
-                    <TableCell align="right">{route.coordinates.x}</TableCell>
-                    <TableCell align="right">{route.coordinates.y}</TableCell>
-                    <TableCell>
-                      {new Date(route.creationDate).toLocaleString('en-US', {
-                        day: 'numeric',
-                        month: 'long',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </TableCell>
-                    <TableCell>{`${route.from.id}: ${route.from.name}`}</TableCell>
-                    <TableCell>{`${route.to.id}: ${route.to.name}`}</TableCell>
-                    <TableCell align="right">{route.distance}</TableCell>
-                  </TableRow>
-                );
-              })}
+              {props.routes.map((route) => (
+                <TableRow>
+                  <TableCell>{route.name}</TableCell>
+                  <TableCell align="right">{route.coordinates.x}</TableCell>
+                  <TableCell align="right">{route.coordinates.y}</TableCell>
+                  <TableCell>
+                    {new Date(route.creationDate).toLocaleString('en-US', {
+                      day: 'numeric',
+                      month: 'long',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </TableCell>
+                  <TableCell>{`${route.from.id}: ${route.from.name}`}</TableCell>
+                  <TableCell>{`${route.to.id}: ${route.to.name}`}</TableCell>
+                  <TableCell align="right">{route.distance}</TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           )}
         </Table>
