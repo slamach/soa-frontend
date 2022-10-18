@@ -1,7 +1,7 @@
 import {
   DataGrid,
   GridActionsCellItem,
-  GridCellParams,
+  GridCellEditCommitParams,
   GridColumns,
   GridFilterModel,
   GridSortModel,
@@ -153,7 +153,7 @@ const RouteGrid = (props: RouteGridProps) => {
   );
 
   const handleRowUpdate = useCallback(
-    async (params: GridCellParams) => {
+    async (params: GridCellEditCommitParams) => {
       await handleUpdateRoute(Number(params.id), {
         [params.field]: params.value,
       });
@@ -178,7 +178,7 @@ const RouteGrid = (props: RouteGridProps) => {
       filterMode="server"
       paginationMode="server"
       sortingMode="server"
-      onCellEditStop={handleRowUpdate}
+      onCellEditCommit={handleRowUpdate}
       onFilterModelChange={(model) => {
         props.setFilterModel(model);
       }}

@@ -1,4 +1,6 @@
-import { Alert, AlertColor, Box, Snackbar } from '@mui/material';
+import Alert, { AlertColor } from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Snackbar from '@mui/material/Snackbar';
 import React, { createContext, useCallback, useState } from 'react';
 import Header from '../Header/Header';
 
@@ -52,7 +54,10 @@ const AppBase = (props: AppBaseProps) => {
   return (
     <>
       <Header />
-      <Box component="main" sx={{ flexGrow: 1 }}>
+      <Box
+        component="main"
+        sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
+      >
         <SnackContext.Provider value={openSnack}>
           <Memo>{props.children}</Memo>
         </SnackContext.Provider>

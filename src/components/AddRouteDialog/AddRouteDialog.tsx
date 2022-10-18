@@ -1,15 +1,12 @@
-import {
-  Dialog,
-  DialogProps,
-  DialogActions,
-  Button,
-  Box,
-  Typography,
-  Stack,
-} from '@mui/material';
+import Dialog, { DialogProps } from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
 import { Formik, Form, Field } from 'formik';
 import { TextField } from 'formik-mui';
-import { useAddRouteMutation } from '../../state/api/routes';
+import { RouteAddDTO } from '../../types/api';
 import {
   validateAddedLocation,
   validateDistance,
@@ -18,7 +15,7 @@ import {
 
 interface AddRouteDialogProps extends DialogProps {
   handleClose: () => void;
-  handleAddResult: (result: any) => void;
+  handleAddResult: (dto: RouteAddDTO) => Promise<boolean>;
 }
 
 interface AddRouteDialogFormValues {
@@ -55,7 +52,6 @@ const AddRouteDialog = (props: AddRouteDialogProps) => {
     toZ: '',
     distance: 2,
   };
-  const [addRoute] = useAddRouteMutation();
 
   return (
     <Dialog open={props.open} onClose={props.handleClose}>
@@ -104,7 +100,7 @@ const AddRouteDialog = (props: AddRouteDialogProps) => {
           return errors;
         }}
         onSubmit={async (values, { setSubmitting }) => {
-          const addResult = await addRoute({
+          await props.handleAddResult({
             name: values.name,
             coordinates: {
               x: Number(values.x),
@@ -128,7 +124,6 @@ const AddRouteDialog = (props: AddRouteDialogProps) => {
           });
           setSubmitting(false);
           props.handleClose();
-          props.handleAddResult(addResult);
         }}
       >
         {({ submitForm, isSubmitting }) => (

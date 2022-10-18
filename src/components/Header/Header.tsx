@@ -2,7 +2,8 @@ import Container from '@mui/material/Container';
 import AppBar from '@mui/material/AppBar';
 import { Link as RouterLink } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
-import { Stack, Toolbar } from '@mui/material';
+import Stack from '@mui/material/Stack';
+import Toolbar from '@mui/material/Toolbar';
 import NavButton from '../NavButton/NavButton';
 
 const Header = () => {

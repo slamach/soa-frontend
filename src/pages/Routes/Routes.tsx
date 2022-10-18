@@ -1,5 +1,6 @@
 import WithQuery from '../../components/WithQuery/WithQuery';
 import {
+  useAddRouteMutation,
   useDeleteRouteMutation,
   useGetRoutesQuery,
   useLazyGetObjectWithMinimumNameQuery,
@@ -9,29 +10,26 @@ import {
 } from '../../state/api/routes';
 import { GridSortModel, GridFilterModel } from '@mui/x-data-grid';
 import { useCallback, useMemo, useState } from 'react';
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Container,
-  Divider,
-  Stack,
-  Typography,
-} from '@mui/material';
-import { processResult } from '../../utils/errorHandling';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import Container from '@mui/material/Container';
+import Divider from '@mui/material/Divider';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import ContainerLoader from '../../components/ContainerLoader/ContainerLoader';
 import AddRouteDialog from '../../components/AddRouteDialog/AddRouteDialog';
 import ContainerError from '../../components/ContainerError/ContainerError';
 import RouteGrid, {
   RouteGridRowType,
 } from '../../components/RouteGrid/RouteGrid';
-import { RouteUpdateDTO } from '../../types/api';
-import { useSnack } from '../../hooks/useSnack';
+import { RouteAddDTO, RouteUpdateDTO } from '../../types/api';
+import { useProcessResult } from '../../hooks/useProcessResult';
 
 const Routes = () => {
   // Page state
   const [addDialogOpen, setAddDialogOpen] = useState<boolean>(false);
-  const { openSnack } = useSnack();
+  const { processResult } = useProcessResult();
 
   // Grid state
   const [page, setPage] = useState<number>(0);
@@ -58,8 +56,17 @@ const Routes = () => {
       (item) => item.columnField === 'distance'
     )?.value,
   });
+  const [addRoute] = useAddRouteMutation();
   const [updateRoute] = useUpdateRouteMutation();
   const [deleteRoute] = useDeleteRouteMutation();
+
+  const handleAddRoute = useCallback(
+    async (dto: RouteAddDTO) => {
+      const updateResult = await addRoute(dto);
+      return processResult(updateResult, 'Sucessfully added');
+    },
+    [addRoute, processResult]
+  );
 
   const handleUpdateRoute = useCallback(
     async (id: number, updatedFields: Omit<RouteUpdateDTO, 'id'>) => {
@@ -67,17 +74,17 @@ const Routes = () => {
         id: Number(id),
         ...updatedFields,
       });
-      return processResult(updateResult, 'Sucessfully updated', openSnack);
+      return processResult(updateResult, 'Sucessfully updated');
     },
-    [updateRoute, openSnack]
+    [updateRoute, processResult]
   );
 
   const handleDeleteRoute = useCallback(
     async (id: number) => {
       const deleteResult = await deleteRoute(id);
-      return processResult(deleteResult, 'Sucessfully deleted', openSnack);
+      return processResult(deleteResult, 'Sucessfully deleted');
     },
-    [deleteRoute, openSnack]
+    [deleteRoute, processResult]
   );
 
   // Additional endpoints
@@ -87,12 +94,8 @@ const Routes = () => {
 
   const handleMinimumName = useCallback(async () => {
     const result = await getObjectWithMinimumName();
-    return processResult(
-      result,
-      `Minimum name: ${result.data?.payload?.name}`,
-      openSnack
-    );
-  }, [getObjectWithMinimumName, openSnack]);
+    return processResult(result, `Minimum name: ${result.data?.payload?.name}`);
+  }, [getObjectWithMinimumName, processResult]);
 
   const handleGroups = useCallback(async () => {
     const result = await getToGroups();
@@ -100,19 +103,17 @@ const Routes = () => {
       result,
       `Groups: ${Object.entries(result.data ?? {})
         .map((entry) => `${entry[0]}: ${entry[1]}`)
-        .join(', ')}`,
-      openSnack
+        .join(', ')}`
     );
-  }, [getToGroups, openSnack]);
+  }, [getToGroups, processResult]);
 
   const handleAllDistances = useCallback(async () => {
     const result = await getSumOfDistances();
     return processResult(
       result,
-      `Sum of all distances: ${result.data?.payload}`,
-      openSnack
+      `Sum of all distances: ${result.data?.payload}`
     );
-  }, [getSumOfDistances, openSnack]);
+  }, [getSumOfDistances, processResult]);
 
   const rows: RouteGridRowType[] = useMemo(
     () =>
@@ -187,9 +188,7 @@ const Routes = () => {
       <AddRouteDialog
         open={addDialogOpen}
         handleClose={() => setAddDialogOpen(false)}
-        handleAddResult={(result) =>
-          processResult(result, 'Sucessfullt added', openSnack)
-        }
+        handleAddResult={handleAddRoute}
       />
     </>
   );

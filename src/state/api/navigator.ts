@@ -2,8 +2,8 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import { LengthFilterDTO, OrderedRoutesDTO, Route } from '../../types/api';
 import { baseNavigatorQuery } from './baseQuery';
 
-const routesApi = createApi({
-  reducerPath: 'routesApi',
+const navigatorApi = createApi({
+  reducerPath: 'navigatorApi',
   baseQuery: baseNavigatorQuery,
   endpoints: (builder) => ({
     getOrderedRoutes: builder.query<Route[], OrderedRoutesDTO>({
@@ -23,6 +23,7 @@ const routesApi = createApi({
   }),
 });
 
-export const { useLazyGetOrderedRoutesQuery } = routesApi;
+export const { useLazyGetOrderedRoutesQuery, useLazyGetRouteByLengthQuery } =
+  navigatorApi;
 
-export default routesApi;
+export default navigatorApi;

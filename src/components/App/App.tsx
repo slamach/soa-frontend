@@ -5,7 +5,7 @@ import NavigatorPage from '../../pages/Navigator/Navigator';
 import AppBase from '../AppBase/AppBase';
 import { ThemeProvider } from '@mui/material/styles';
 import GlobalStyles from '@mui/material/GlobalStyles';
-import { CssBaseline } from '@mui/material';
+import CssBaseline from '@mui/material/CssBaseline';
 
 const App = () => {
   return (

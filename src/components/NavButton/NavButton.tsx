@@ -1,4 +1,4 @@
-import { Button, ButtonProps } from '@mui/material';
+import Button, { ButtonProps } from '@mui/material/Button';
 import { NavLink } from 'react-router-dom';
 
 const NavButton = (props: ButtonProps<typeof NavLink>) => {

@@ -20,7 +20,7 @@ export const validateAddedLocation = (location: Partial<Location>) => {
       location.y !== undefined ||
       location.z !== undefined)
   ) {
-    return "You can't specity other field if id is selected";
+    return "You can't specity other field if id is selected!";
   }
   if (
     location.id === undefined &&
@@ -29,6 +29,15 @@ export const validateAddedLocation = (location: Partial<Location>) => {
       location.y === undefined ||
       location.z === undefined)
   ) {
-    return 'You must specify all other fields if id is not selected';
+    return 'You must specify all other fields if id is not selected!';
+  }
+  if (location.id !== undefined) {
+    return validateId(location.id);
+  }
+};
+
+export const validateId = (id: number) => {
+  if (id < 1) {
+    return 'Id must be greater than 1!';
   }
 };
