@@ -27,7 +27,9 @@ import {
   Button,
   ButtonGroup,
   Container,
+  Divider,
   Snackbar,
+  Stack,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -324,22 +326,30 @@ const Routes = () => {
             sx={{
               pt: 1,
               pb: 1,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
             }}
           >
-            <Typography variant="body1" component="h2">
-              Additional endpoints:
-            </Typography>
-            <ButtonGroup>
-              <Button onClick={handleMinimumName}>Minimum name</Button>
-              <Button onClick={handleGroups}>Groups</Button>
-              <Button onClick={handleAllDistances}>All distances</Button>
-            </ButtonGroup>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <Typography variant="body1" component="h2">
+                Additional endpoints:
+              </Typography>
+              <ButtonGroup>
+                <Button onClick={handleMinimumName}>Minimum name</Button>
+                <Button onClick={handleGroups}>Groups</Button>
+                <Button onClick={handleAllDistances}>All distances</Button>
+              </ButtonGroup>
+            </Stack>
+            <Divider sx={{ mt: 1 }} />
           </Container>
           <DataGrid
-            sx={{ pl: 2, pr: 2 }}
+            sx={{
+              pl: 2,
+              pr: 2,
+              border: 'none',
+            }}
             columns={columns}
             rows={rows}
             filterMode="server"
