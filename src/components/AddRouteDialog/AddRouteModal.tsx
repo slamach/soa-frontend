@@ -104,7 +104,6 @@ const AddRouteModal = (props: AddRouteModalProps) => {
           return errors;
         }}
         onSubmit={async (values, { setSubmitting }) => {
-          console.log(values);
           const addResult = await addRoute({
             name: values.name,
             coordinates: {

@@ -2,7 +2,7 @@ import WithQuery from '../../components/WithQuery/WithQuery';
 import {
   useDeleteRouteMutation,
   useGetRoutesQuery,
-  useLazyGetRouteWithMinimumNameQuery,
+  useLazyGetObjectWithMinimumNameQuery,
   useLazyGetSumOfDistancesQuery,
   useLazyGetToGroupsQuery,
   useUpdateRouteMutation,
@@ -112,7 +112,7 @@ const Routes = () => {
   const [updateRoute] = useUpdateRouteMutation();
   const [deleteRoute] = useDeleteRouteMutation();
 
-  const [getRouteWithMinimumName] = useLazyGetRouteWithMinimumNameQuery();
+  const [getObjectWithMinimumName] = useLazyGetObjectWithMinimumNameQuery();
   const [getToGroups] = useLazyGetToGroupsQuery();
   const [getSumOfDistances] = useLazyGetSumOfDistancesQuery();
 
@@ -154,7 +154,7 @@ const Routes = () => {
   };
 
   const handleMinimumName = async () => {
-    const result = await getRouteWithMinimumName();
+    const result = await getObjectWithMinimumName();
     handleError(result, `Minimum name: ${result.data?.payload?.name}`);
   };
 
@@ -162,7 +162,7 @@ const Routes = () => {
     const result = await getToGroups();
     handleError(
       result,
-      `Groups: ${Object.entries(result.data)
+      `Groups: ${Object.entries(result.data ?? {})
         .map((entry) => `${entry[0]}: ${entry[1]}`)
         .join(', ')}`
     );

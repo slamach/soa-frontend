@@ -1,4 +1,4 @@
-import { components } from '../types/routesApi';
+import { components } from '../types/api/routes';
 
 export const validateName = (name: string) => {
   if (name.length === 0) {
@@ -13,9 +13,8 @@ export const validateDistance = (distance: number) => {
 };
 
 export const validateAddedLocation = (
-  location: components['schemas']['Location']
+  location: Partial<components['schemas']['Location']>
 ) => {
-  console.log(location);
   if (
     location.id !== undefined &&
     (location.name !== undefined ||

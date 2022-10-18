@@ -1,4 +1,4 @@
-import { components } from '../types/routesApi';
+import { components } from '../types/api/routes';
 
 export function isResponseError(
   error: unknown

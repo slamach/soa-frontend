@@ -38,14 +38,14 @@ export interface components {
       /** Format: float */
       x?: number;
       /** Format: double */
-      y?: number;
+      y: number;
       /** Format: double */
-      z?: number;
-      name?: string;
+      z: number;
+      name: string;
     };
     Route: {
       /** Format: int32 */
-      id: number;
+      id?: number;
       name: string;
       coordinates: components['schemas']['Coordinates'];
       /** Format: date-time */
@@ -58,6 +58,21 @@ export interface components {
     Response: {
       message?: string;
       payload?: { [key: string]: unknown };
+    };
+    RouteUpdateRequestDto: {
+      /** Format: int32 */
+      id?: number;
+      name?: string;
+      /** Format: int64 */
+      x?: number;
+      /** Format: double */
+      y?: number;
+      /** Format: date-time */
+      creationDate?: string;
+      from?: components['schemas']['Location'];
+      to?: components['schemas']['Location'];
+      /** Format: float */
+      distance?: number;
     };
     RoutesFilterDto: {
       nameFilter?: string;
@@ -124,7 +139,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['Route'];
+        'application/json': components['schemas']['RouteUpdateRequestDto'];
       };
     };
   };

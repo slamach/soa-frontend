@@ -1,5 +1,5 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { components } from '../../types/routesApi';
+import { components, operations } from '../../types/api/routes';
 import { baseRoutesQuery } from './baseQuery';
 
 const routesApi = createApi({
@@ -10,10 +10,10 @@ const routesApi = createApi({
     getRoutes: builder.query<
       {
         totalElements: number;
-        content: components['schemas']['Route'][];
+        content: operations['getAll']['responses']['200']['content']['application/json'];
       },
-      components['schemas']['RoutesFilterDto'] &
-        components['schemas']['Pageable']
+      operations['getAll']['parameters']['query']['Routes filters'] &
+        operations['getAll']['parameters']['query']['Paging and sorting']
     >({
       query: (params) => ({
         url: '/',
@@ -23,8 +23,15 @@ const routesApi = createApi({
       providesTags: ['Routes'],
     }),
     addRoute: builder.mutation<
-      components['schemas']['Route'],
-      Omit<Omit<components['schemas']['Route'], 'id'>, 'creationDate'>
+      | operations['create']['responses']['200']['content']['application/json']
+      | operations['create']['responses']['400']['content']['application/json'],
+      Omit<
+        components['schemas']['Route'],
+        'id' | 'creationDate' | 'from' | 'to'
+      > & {
+        from: Partial<components['schemas']['Location']>;
+        to: Partial<components['schemas']['Location']>;
+      }
     >({
       query: (body) => ({
         url: '/',
@@ -34,8 +41,9 @@ const routesApi = createApi({
       invalidatesTags: ['Routes'],
     }),
     updateRoute: builder.mutation<
-      components['schemas']['Route'],
-      Partial<components['schemas']['Route']> &
+      | operations['update']['responses']['200']['content']['application/json']
+      | operations['update']['responses']['400']['content']['application/json'],
+      Partial<Omit<components['schemas']['Route'], 'from' | 'to'>> &
         Pick<components['schemas']['Route'], 'id'>
     >({
       query: (body) => ({
@@ -45,26 +53,44 @@ const routesApi = createApi({
       }),
       invalidatesTags: ['Routes'],
     }),
-    deleteRoute: builder.mutation<unknown, number>({
+    deleteRoute: builder.mutation<
+      | operations['delete']['responses']['200']
+      | operations['delete']['responses']['404']['content']['application/json'],
+      number
+    >({
       query: (id) => ({
         url: `/${id}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['Routes'],
     }),
-    getRouteWithMinimumName: builder.query<any, void>({
+    getObjectWithMinimumName: builder.query<
+      | {
+          payload: operations['getObjectWithMinimumName']['responses']['200']['content']['application/json'];
+        }
+      | operations['getObjectWithMinimumName']['responses']['404']['content']['application/json'],
+      void
+    >({
       query: () => ({
         url: '/minimum-name',
         method: 'POST',
       }),
     }),
-    getToGroups: builder.query<any, void>({
+    getToGroups: builder.query<
+      {
+        [group: string]: number;
+      },
+      void
+    >({
       query: () => ({
         url: '/groups',
         method: 'POST',
       }),
     }),
-    getSumOfDistances: builder.query<any, void>({
+    getSumOfDistances: builder.query<
+      operations['computeDistances']['responses']['200']['content']['application/json'],
+      void
+    >({
       query: () => ({
         url: '/all-distances',
         method: 'POST',
@@ -78,7 +104,7 @@ export const {
   useAddRouteMutation,
   useUpdateRouteMutation,
   useDeleteRouteMutation,
-  useLazyGetRouteWithMinimumNameQuery,
+  useLazyGetObjectWithMinimumNameQuery,
   useLazyGetToGroupsQuery,
   useLazyGetSumOfDistancesQuery,
 } = routesApi;
