@@ -138,7 +138,7 @@ const AddRouteModal = (props: AddRouteModalProps) => {
                 padding: 3,
               }}
             >
-              <Typography variant="h5" marginBottom={2}>
+              <Typography variant="h5" component="h2" marginBottom={2}>
                 Add new route
               </Typography>
               <Stack direction="row" gap={3} alignItems="center">
@@ -170,7 +170,9 @@ const AddRouteModal = (props: AddRouteModalProps) => {
                   />
                 </Stack>
                 <Stack gap={2}>
-                  <Typography variant="h6">From</Typography>
+                  <Typography variant="h6" component="h3">
+                    From
+                  </Typography>
                   <Field
                     component={TextField}
                     type="number"
@@ -203,7 +205,9 @@ const AddRouteModal = (props: AddRouteModalProps) => {
                   />
                 </Stack>
                 <Stack gap={2}>
-                  <Typography variant="h6">To</Typography>
+                  <Typography variant="h6" component="h3">
+                    To
+                  </Typography>
                   <Field
                     component={TextField}
                     type="number"

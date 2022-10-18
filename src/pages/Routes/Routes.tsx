@@ -26,6 +26,7 @@ import {
   Box,
   Button,
   ButtonGroup,
+  Container,
   Snackbar,
   Tooltip,
   Typography,
@@ -40,7 +41,7 @@ const ValidationEditInputCell = (props: GridRenderEditCellParams) => {
   const { error } = props;
   return (
     <Tooltip
-      open={!!error}
+      open={Boolean(error)}
       title={error}
       componentsProps={{
         tooltip: {
@@ -129,7 +130,7 @@ const Routes = () => {
     }));
   };
 
-  const handleError = (result: any, successMessage: string) => {
+  const processResult = (result: any, successMessage: string) => {
     if ('error' in result) {
       let errorMessage: string;
       if (isResponseError(result.error) && result.error.data.message) {
@@ -143,6 +144,7 @@ const Routes = () => {
         severity: 'error',
         message: errorMessage,
       }));
+      return false;
     } else {
       setSnackState((prevState) => ({
         ...prevState,
@@ -150,17 +152,18 @@ const Routes = () => {
         severity: 'success',
         message: successMessage,
       }));
+      return true;
     }
   };
 
   const handleMinimumName = async () => {
     const result = await getObjectWithMinimumName();
-    handleError(result, `Minimum name: ${result.data?.payload?.name}`);
+    processResult(result, `Minimum name: ${result.data?.payload?.name}`);
   };
 
   const handleGroups = async () => {
     const result = await getToGroups();
-    handleError(
+    processResult(
       result,
       `Groups: ${Object.entries(result.data ?? {})
         .map((entry) => `${entry[0]}: ${entry[1]}`)
@@ -170,7 +173,7 @@ const Routes = () => {
 
   const handleAllDistances = async () => {
     const result = await getSumOfDistances();
-    handleError(result, `Sum of all distances: ${result.data?.payload}`);
+    processResult(result, `Sum of all distances: ${result.data?.payload}`);
   };
 
   const columns: GridColumns = [
@@ -260,7 +263,7 @@ const Routes = () => {
             label="Delete"
             onClick={async () => {
               const deleteResult = await deleteRoute(Number(id));
-              handleError(deleteResult, 'Sucessfully deleted');
+              processResult(deleteResult, 'Sucessfully deleted');
             }}
             color="inherit"
           />,
@@ -292,7 +295,21 @@ const Routes = () => {
         isLoading={isLoading}
         error={error}
         onLoadingComponent={<ContainerLoader />}
-        onErrorComponent={<p>ERROR</p>}
+        onErrorComponent={
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+              height: '100%',
+            }}
+          >
+            <Typography variant="h5" component="p">
+              Error while fetching initial data
+            </Typography>
+          </Box>
+        }
       >
         <Box
           sx={{
@@ -302,22 +319,27 @@ const Routes = () => {
             height: '100%',
           }}
         >
-          <Box
+          <Container
+            maxWidth="xl"
             sx={{
-              padding: 1,
+              pt: 1,
+              pb: 1,
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
             }}
           >
-            <Typography variant="body1">Additional endpoints:</Typography>
+            <Typography variant="body1" component="h2">
+              Additional endpoints:
+            </Typography>
             <ButtonGroup>
               <Button onClick={handleMinimumName}>Minimum name</Button>
               <Button onClick={handleGroups}>Groups</Button>
               <Button onClick={handleAllDistances}>All distances</Button>
             </ButtonGroup>
-          </Box>
+          </Container>
           <DataGrid
+            sx={{ pl: 2, pr: 2 }}
             columns={columns}
             rows={rows}
             filterMode="server"
@@ -326,8 +348,6 @@ const Routes = () => {
             loading={isLoading}
             processRowUpdate={async (newRow, oldRow) => {
               const updatedFields: { [key: string]: any } = {};
-              console.log(JSON.stringify(newRow['creationDate']));
-              console.log(JSON.stringify(oldRow['creationDate']));
               for (let field of Object.keys(newRow)) {
                 if (
                   JSON.stringify(newRow[field]) !==
@@ -343,7 +363,11 @@ const Routes = () => {
                 id: Number(newRow.id),
                 ...updatedFields,
               });
-              handleError(updateResult, 'Sucessfully updated');
+              if (processResult(updateResult, 'Sucessfully updated')) {
+                return newRow;
+              } else {
+                return oldRow;
+              }
             }}
             sortModel={sortModel}
             onSortModelChange={(model) => {
@@ -405,7 +429,7 @@ const Routes = () => {
       <AddRouteModal
         open={addModalOpen}
         handleClose={() => setAddModalOpen(false)}
-        handleAddResult={(result) => handleError(result, 'Sucessfullt added')}
+        handleAddResult={(result) => processResult(result, 'Sucessfullt added')}
       />
     </>
   );

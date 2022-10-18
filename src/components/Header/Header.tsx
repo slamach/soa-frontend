@@ -8,7 +8,7 @@ import NavButton from '../NavButton/NavButton';
 const Header = () => {
   return (
     <AppBar position="static">
-      <Container maxWidth="lg">
+      <Container maxWidth="xl">
         <Toolbar disableGutters>
           <Typography
             variant="h5"
